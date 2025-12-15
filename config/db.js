@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 const orderSchema = require("../models/Order");
 
 // Global o'zgaruvchilar
-let OrderBranch1, OrderBranch2, OrderBranch3;
-let branch1Conn, branch2Conn, branch3Conn;
+let OrderBranch1;
+let branch1Conn;
 
-// Filial DB ulanishlari
+// Filial DB ulanishi
 function connectDB() {
   try {
     // Branch1 (asosiy: users ham shu yerda)
@@ -14,26 +14,19 @@ function connectDB() {
       useUnifiedTopology: true,
     });
 
- 
-
- 
-
-    // Order modellarni aniqlash
+    // Order modelini aniqlash
     OrderBranch1 = branch1Conn.model("Order", orderSchema, "globalorders");
-
 
     // Ulanish holatini log qilish
     branch1Conn.on("connected", () =>
       console.log("✅ Branch1 DB ulandi (users + orders)")
     );
 
-
     branch1Conn.on("error", (err) =>
       console.error("❌ Branch1 ulanish xatosi:", err.message)
     );
-  
-    // ✅ endi uchalasi ham qaytadi
-    return { branch1Conn, branch2Conn, branch3Conn };
+
+    return { branch1Conn };
   } catch (error) {
     console.error("❌ DB ulanish xatosi:", error.message);
     process.exit(1);
@@ -50,25 +43,7 @@ function getBranch1Conn() {
   return branch1Conn;
 }
 
-function getBranch2Conn() {
-  if (!branch2Conn) {
-    throw new Error(
-      "Branch2 connection not initialized. Call connectDB first."
-    );
-  }
-  return branch2Conn;
-}
-
-function getBranch3Conn() {
-  if (!branch3Conn) {
-    throw new Error(
-      "Branch3 connection not initialized. Call connectDB first."
-    );
-  }
-  return branch3Conn;
-}
-
-// Order modellarini qaytaruvchi funksiyalar
+// Order modelini qaytaruvchi funksiyalar
 function getOrderBranch1() {
   if (!OrderBranch1) {
     throw new Error(
@@ -78,30 +53,8 @@ function getOrderBranch1() {
   return OrderBranch1;
 }
 
-function getOrderBranch2() {
-  if (!OrderBranch2) {
-    throw new Error(
-      "OrderBranch2 model not initialized. Call connectDB first."
-    );
-  }
-  return OrderBranch2;
-}
-
-function getOrderBranch3() {
-  if (!OrderBranch3) {
-    throw new Error(
-      "OrderBranch3 model not initialized. Call connectDB first."
-    );
-  }
-  return OrderBranch3;
-}
-
 module.exports = {
   connectDB,
   getBranch1Conn,
-  getBranch2Conn,
-  getBranch3Conn,
   getOrderBranch1,
-  getOrderBranch2,
-  getOrderBranch3,
 };

@@ -1,4 +1,4 @@
-const { getBranch1Conn, getBranch2Conn } = require("../config/db");
+const { getBranch1Conn } = require("../config/db");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
@@ -9,21 +9,17 @@ const userSchema = new mongoose.Schema({
 });
 
 // Model olish helper
-function getUserModels() {
+function getUserModel() {
   const branch1Conn = getBranch1Conn();
-  const branch2Conn = getBranch2Conn();
-
   const Branch1User = branch1Conn.model("User", userSchema, "users");
-  const Branch2User = branch2Conn.model("User", userSchema, "users");
-
-  return { Branch1User, Branch2User };
+  return Branch1User;
 }
 
-// 🔹 Foydalanuvchi yaratish (ikkala bazaga yoziladi)
+// 🔹 Foydalanuvchi yaratish (faqat Branch1)
 exports.register = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const { Branch1User, Branch2User } = getUserModels();
+    const Branch1User = getUserModel();
 
     // Avval Branch1 da borligini tekshiramiz
     const existing = await Branch1User.findOne({ username });
@@ -31,14 +27,12 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "❌ Bu login allaqachon mavjud" });
     }
 
-    // Ikkala bazaga ham yozamiz
+    // Branch1 ga yozamiz
     const user1 = await Branch1User.create({ username, password });
-    const user2 = await Branch2User.create({ username, password });
 
     res.json({
-      message: "✅ Foydalanuvchi yaratildi (ikkala filialda)",
+      message: "✅ Foydalanuvchi yaratildi (Branch1)",
       branch1: user1,
-      branch2: user2,
     });
   } catch (err) {
     console.error("❌ Register xato:", err.message);
@@ -50,7 +44,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const { Branch1User } = getUserModels();
+    const Branch1User = getUserModel();
 
     const user = await Branch1User.findOne({ username });
     if (!user)
@@ -63,13 +57,13 @@ exports.login = async (req, res) => {
     // 🔑 Token generatsiya qilamiz
     const token = jwt.sign(
       { id: user._id, username: user.username },
-      process.env.JWT_SECRET || "sora-secret", // .env dan olingan maxfiy kalit
+      process.env.JWT_SECRET || "sora-secret",
       { expiresIn: "7d" }
     );
 
     res.json({
       message: "✅ Login muvaffaqiyatli",
-      token, // 👈 frontend shu tokenni oladi
+      token,
       user: {
         id: user._id,
         username: user.username,
