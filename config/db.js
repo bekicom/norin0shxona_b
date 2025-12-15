@@ -14,40 +14,24 @@ function connectDB() {
       useUnifiedTopology: true,
     });
 
-    // Branch2
-    branch2Conn = mongoose.createConnection(process.env.MONGO_URI_BRANCH2, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+ 
 
-    // Branch3
-    branch3Conn = mongoose.createConnection(process.env.MONGO_URI_BRANCH3, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+ 
 
     // Order modellarni aniqlash
     OrderBranch1 = branch1Conn.model("Order", orderSchema, "globalorders");
-    OrderBranch2 = branch2Conn.model("Order", orderSchema, "globalorders");
-    OrderBranch3 = branch3Conn.model("Order", orderSchema, "globalorders");
+
 
     // Ulanish holatini log qilish
     branch1Conn.on("connected", () =>
       console.log("✅ Branch1 DB ulandi (users + orders)")
     );
-    branch2Conn.on("connected", () => console.log("✅ Branch2 DB ulandi"));
-    branch3Conn.on("connected", () => console.log("✅ Branch3 DB ulandi"));
+
 
     branch1Conn.on("error", (err) =>
       console.error("❌ Branch1 ulanish xatosi:", err.message)
     );
-    branch2Conn.on("error", (err) =>
-      console.error("❌ Branch2 ulanish xatosi:", err.message)
-    );
-    branch3Conn.on("error", (err) =>
-      console.error("❌ Branch3 ulanish xatosi:", err.message)
-    );
-
+  
     // ✅ endi uchalasi ham qaytadi
     return { branch1Conn, branch2Conn, branch3Conn };
   } catch (error) {
